@@ -120,14 +120,11 @@
   .qbox em{font-style:normal;color:var(--ink)}
 
   /* 結果 */
-  .result{position:relative;container-type:inline-size;width:min(460px,90vw);margin:26px auto 6px}
+  .result{position:relative;container-type:inline-size;width:min(400px,90vw);margin:26px auto 6px}
   .result.n5{width:min(250px,60vw)}
   .slot{position:absolute}
   .slot .pc{width:100%;height:auto;aspect-ratio:1}
   .slot .face{font-size:var(--fs)}
-  .slot .no{position:absolute;left:-4px;top:-4px;z-index:3;min-width:1.5em;height:1.5em;border-radius:50%;
-    background:var(--ink);color:var(--bg);font-size:.8rem;line-height:1.5em;text-align:center;opacity:0;transition:opacity .5s}
-  .slot.on .no{opacity:1}
   .deck{position:relative;width:90px;height:90px;margin:10px 0}
   .deck .pc{position:absolute;left:18px;top:18px}
   .qshow{max-width:520px;line-height:1.8;margin-top:4px}
@@ -320,9 +317,10 @@ async function shuffleGrid(grid){
 }
 
 /* 排法（單位：像素，棋子直徑 62，依序為第 1、2、3… 支的左上角位置） */
+const U=76; // 相鄰兩支棋的間距（所有棋都落在同一個等距格點上）
 const LAYOUTS={
-  5:[[89,69],[180,0],[0,0],[0,143],[180,143]],
-  9:[[397,69],[320,0],[320,69],[320,143],[90,69],[180,0],[0,0],[0,143],[180,143]]
+  5:[[1,1],[2,0],[0,0],[0,2],[2,2]].map(([x,y])=>[x*U,y*U]),
+  9:[[4,1],[3,0],[3,1],[3,2],[1,1],[2,0],[0,0],[0,2],[2,2]].map(([x,y])=>[x*U,y*U])
 };
 const D=62;
 
@@ -340,12 +338,11 @@ async function reveal(picked){
     const s=document.createElement("div"); s.className="slot";
     s.style.cssText=`left:${pos[i][0]/W*100}%;top:${pos[i][1]/H*100}%;width:${D/W*100}%;--fs:${D/W*62}cqw`;
     const pc=makePiece(p); pc.style.opacity="0"; pc.style.transition="opacity .5s";
-    const no=document.createElement("div"); no.className="no"; no.textContent=i+1;
-    s.append(pc,no); box.appendChild(s); return {s,pc};
+    s.append(pc); box.appendChild(s); return {s,pc};
   });
   await sleep(300);
   for(let i=0;i<n;i++){
-    slots[i].pc.style.opacity="1"; slots[i].s.classList.add("on");
+    slots[i].pc.style.opacity="1";
     await sleep(500);
     slots[i].pc.classList.add("flipped"); sfx("flip");
     await sleep(900);
