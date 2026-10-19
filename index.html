@@ -120,11 +120,14 @@
   .qbox em{font-style:normal;color:var(--ink)}
 
   /* 結果 */
-  .result{display:flex;flex-wrap:wrap;gap:18px 14px;justify-content:center;max-width:520px;margin:26px 0 6px}
-  .slot{display:flex;flex-direction:column;align-items:center;gap:8px}
-  .slot .pc{width:64px;height:64px}
-  .slot .face{font-size:40px}
-  .slot small{color:var(--ink-soft);font-size:.85rem;letter-spacing:.1em}
+  .result{position:relative;container-type:inline-size;width:min(460px,90vw);margin:26px auto 6px}
+  .result.n5{width:min(250px,60vw)}
+  .slot{position:absolute}
+  .slot .pc{width:100%;height:auto;aspect-ratio:1}
+  .slot .face{font-size:var(--fs)}
+  .slot .no{position:absolute;left:-4px;top:-4px;z-index:3;min-width:1.5em;height:1.5em;border-radius:50%;
+    background:var(--ink);color:var(--bg);font-size:.8rem;line-height:1.5em;text-align:center;opacity:0;transition:opacity .5s}
+  .slot.on .no{opacity:1}
   .deck{position:relative;width:90px;height:90px;margin:10px 0}
   .deck .pc{position:absolute;left:18px;top:18px}
   .qshow{max-width:520px;line-height:1.8;margin-top:4px}
@@ -316,25 +319,35 @@ async function shuffleGrid(grid){
   grid.classList.remove("shuffling");
 }
 
+/* 排法（單位：像素，棋子直徑 62，依序為第 1、2、3… 支的左上角位置） */
+const LAYOUTS={
+  5:[[89,69],[180,0],[0,0],[0,143],[180,143]],
+  9:[[397,69],[320,0],[320,69],[320,143],[90,69],[180,0],[0,0],[0,143],[180,143]]
+};
+const D=62;
+
 /* 依序翻開 */
 async function reveal(picked){
-  const n=picked.length;
+  const n=picked.length, pos=LAYOUTS[n];
   show("s-result");
   $("qres").textContent=question;
   $("rtitle").textContent="翻棋中……";
   $("btn-again").style.visibility="hidden";
-  const box=$("result"); box.innerHTML="";
+  const box=$("result"); box.innerHTML=""; box.className="result n"+n;
+  const W=Math.max(...pos.map(p=>p[0]))+D, H=Math.max(...pos.map(p=>p[1]))+D;
+  box.style.aspectRatio=W+"/"+H;
   const slots=picked.map((p,i)=>{
     const s=document.createElement("div"); s.className="slot";
+    s.style.cssText=`left:${pos[i][0]/W*100}%;top:${pos[i][1]/H*100}%;width:${D/W*100}%;--fs:${D/W*62}cqw`;
     const pc=makePiece(p); pc.style.opacity="0"; pc.style.transition="opacity .5s";
-    const lb=document.createElement("small"); lb.textContent="第"+"一二三四五六七八九"[i]+"支";
-    s.append(pc,lb); box.appendChild(s); return pc;
+    const no=document.createElement("div"); no.className="no"; no.textContent=i+1;
+    s.append(pc,no); box.appendChild(s); return {s,pc};
   });
   await sleep(300);
   for(let i=0;i<n;i++){
-    slots[i].style.opacity="1";
+    slots[i].pc.style.opacity="1"; slots[i].s.classList.add("on");
     await sleep(500);
-    slots[i].classList.add("flipped"); sfx("flip");
+    slots[i].pc.classList.add("flipped"); sfx("flip");
     await sleep(900);
   }
   $("rtitle").textContent="你抽到的棋";
