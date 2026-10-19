@@ -138,6 +138,10 @@
   .grid .pc .num{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--ink);font-weight:700;font-size:1.2rem;z-index:2}
   .grid .pc.sel .num{display:flex}
   .grid.shuffling .pc{transition:transform .6s cubic-bezier(.5,0,.3,1);pointer-events:none}
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(6,1fr);gap:10px 2vw}
+    .grid .pc{width:14vw;height:14vw}
+  }
   .counter{color:var(--ink);letter-spacing:.2em;font-size:1.05rem;min-height:1.6em}
 </style>
 </head>
